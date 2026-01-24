@@ -17,6 +17,9 @@ targets:
       - FitbitSync
     entitlements:
       path: FitbitSync/FitbitSync.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
     info:
       path: FitbitSync/Info.plist
       properties:
@@ -29,6 +32,8 @@ targets:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
+        NSHealthShareUsageDescription: FitbitSync needs to read your health data to sync with Fitbit.
+        NSHealthUpdateUsageDescription: FitbitSync needs to write health data from Fitbit to Apple Health.
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
         CFBundleURLTypes:

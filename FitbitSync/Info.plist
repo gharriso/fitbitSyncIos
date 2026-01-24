@@ -34,9 +34,9 @@
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>FitbitSync needs access to read your weight and body fat data from Apple Health to compare with your Fitbit data.</string>
+	<string>FitbitSync needs to read your health data to sync with Fitbit.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>FitbitSync needs access to write weight and body fat data to Apple Health to sync your Fitbit data.</string>
+	<string>FitbitSync needs to write health data from Fitbit to Apple Health.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -20,6 +20,10 @@ struct StatsView: View {
     @State private var healthKitBodyFatStats: BodyFatStatistics?
     @State private var errorMessage: String?
 
+    // Raw data for comparison
+    @State private var missingWeightEntries: [WeightEntry] = []
+    @State private var missingBodyFatEntries: [BodyFatEntry] = []
+
     var body: some View {
         NavigationView {
             ScrollView {
@@ -67,6 +71,45 @@ struct StatsView: View {
                             fitbitStats: fitbitBodyFatStats,
                             healthKitStats: healthKitBodyFatStats
                         )
+
+                        // Missing Entries Navigation
+                        let totalMissing = missingWeightEntries.count + missingBodyFatEntries.count
+                        NavigationLink {
+                            MissingEntriesView(
+                                missingWeightEntries: missingWeightEntries,
+                                missingBodyFatEntries: missingBodyFatEntries
+                            )
+                        } label: {
+                            HStack {
+                                Image(systemName: totalMissing > 0 ? "exclamationmark.circle.fill" : "checkmark.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(totalMissing > 0 ? .orange : .green)
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Missing from Apple Health")
+                                        .font(.headline)
+                                    if totalMissing > 0 {
+                                        Text("\(totalMissing) entries to sync")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    } else {
+                                        Text("All entries synced")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding()
+                            .background(Color(.systemBackground))
+                            .cornerRadius(12)
+                            .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
                 .padding()
@@ -119,11 +162,23 @@ struct StatsView: View {
             let hkWeight = DataProcessor.calculateWeightStatistics(from: healthKit.weight)
             let hkBodyFat = DataProcessor.calculateBodyFatStatistics(from: healthKit.bodyFat)
 
+            // Find missing entries (in Fitbit but not in HealthKit)
+            let missingWeight = DataProcessor.findMissingWeightEntries(
+                fitbit: fitbit.weight,
+                healthKit: healthKit.weight
+            )
+            let missingBodyFat = DataProcessor.findMissingBodyFatEntries(
+                fitbit: fitbit.bodyFat,
+                healthKit: healthKit.bodyFat
+            )
+
             await MainActor.run {
                 fitbitWeightStats = fbWeight
                 fitbitBodyFatStats = fbBodyFat
                 healthKitWeightStats = hkWeight
                 healthKitBodyFatStats = hkBodyFat
+                missingWeightEntries = missingWeight
+                missingBodyFatEntries = missingBodyFat
                 isLoading = false
             }
         } catch {

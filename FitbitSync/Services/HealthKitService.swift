@@ -43,6 +43,20 @@ class HealthKitService: ObservableObject {
                 isAuthorized = true
                 print("HealthKit authorization granted")
             }
+        } catch let error as NSError {
+            await MainActor.run {
+                // Check for missing entitlement error
+                if error.domain == "com.apple.healthkit" && error.code == 5 {
+                    authError = HealthKitError.missingEntitlement
+                    print("HealthKit error: Missing entitlement. Enable HealthKit capability in Xcode.")
+                } else if error.localizedDescription.contains("entitlement") {
+                    authError = HealthKitError.missingEntitlement
+                    print("HealthKit error: Missing entitlement. Enable HealthKit capability in Xcode.")
+                } else {
+                    authError = error
+                    print("HealthKit authorization error: \(error)")
+                }
+            }
         } catch {
             await MainActor.run {
                 authError = error
@@ -162,6 +176,7 @@ enum HealthKitError: LocalizedError {
     case notAvailable
     case invalidType
     case authorizationDenied
+    case missingEntitlement
 
     var errorDescription: String? {
         switch self {
@@ -171,6 +186,8 @@ enum HealthKitError: LocalizedError {
             return "Invalid HealthKit data type"
         case .authorizationDenied:
             return "HealthKit authorization was denied"
+        case .missingEntitlement:
+            return "HealthKit entitlement is missing. Please enable HealthKit capability in Xcode."
         }
     }
 }

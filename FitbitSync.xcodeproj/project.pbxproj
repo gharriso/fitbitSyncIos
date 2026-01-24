@@ -11,6 +11,7 @@
 		1FEF25D7BF583FED60EA43A1 /* FitbitConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36C35E2450A998CD8CA50B0C /* FitbitConfig.swift */; };
 		4626BCB79C24B1B618C749A0 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D143330939CBB1E8B4BB96C9 /* LoginView.swift */; };
 		67B55588A530CC05AA753977 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0F164B2F2FE83E0692C7D4 /* ContentView.swift */; };
+		73951703B216D5D50D7C46D0 /* MissingEntriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54466DF9655A9B67FC460CDD /* MissingEntriesView.swift */; };
 		751C87142C43611995E5940A /* WeightEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD8CBA97AB0A3D0F91A612B6 /* WeightEntry.swift */; };
 		79EC2E0E4CE5D59DA12BF61D /* FitbitAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81C657F74E6C785F9CC71A61 /* FitbitAPIService.swift */; };
 		86129A04723C0912A08F69BD /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D759826B240EA85CDEE31A75 /* StatsView.swift */; };
@@ -26,6 +27,7 @@
 		2654E98DBBEA18D7C724D021 /* FitbitAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitbitAuthService.swift; sourceTree = "<group>"; };
 		2EDEEFAAC2646BFDD9613DFE /* FitbitSyncApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitbitSyncApp.swift; sourceTree = "<group>"; };
 		36C35E2450A998CD8CA50B0C /* FitbitConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitbitConfig.swift; sourceTree = "<group>"; };
+		54466DF9655A9B67FC460CDD /* MissingEntriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissingEntriesView.swift; sourceTree = "<group>"; };
 		5D7619AFA6FB2071FF66614D /* FitbitSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitbitSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BA0163B31185377E9276D1B /* OAuthToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthToken.swift; sourceTree = "<group>"; };
 		81C657F74E6C785F9CC71A61 /* FitbitAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitbitAPIService.swift; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 			children = (
 				9B0F164B2F2FE83E0692C7D4 /* ContentView.swift */,
 				D143330939CBB1E8B4BB96C9 /* LoginView.swift */,
+				54466DF9655A9B67FC460CDD /* MissingEntriesView.swift */,
 				D759826B240EA85CDEE31A75 /* StatsView.swift */,
 			);
 			path = Views;
@@ -177,6 +180,7 @@
 				B9B639435F9FFF42B752F898 /* FitbitSyncApp.swift in Sources */,
 				D2B96A058E2A058DA45157E2 /* HealthKitService.swift in Sources */,
 				4626BCB79C24B1B618C749A0 /* LoginView.swift in Sources */,
+				73951703B216D5D50D7C46D0 /* MissingEntriesView.swift in Sources */,
 				A04B56917EE179B8BFFCF58B /* OAuthToken.swift in Sources */,
 				86129A04723C0912A08F69BD /* StatsView.swift in Sources */,
 				751C87142C43611995E5940A /* WeightEntry.swift in Sources */,

@@ -97,4 +97,40 @@ class DataProcessor {
     static func formatBodyFat(_ fat: Double) -> String {
         return String(format: "%.1f%%", fat)
     }
+
+    // MARK: - Comparison (Find Missing Entries)
+
+    /// Finds weight entries from Fitbit that don't exist in HealthKit (fuzzy match by calendar day)
+    static func findMissingWeightEntries(fitbit: [WeightEntry], healthKit: [WeightEntry]) -> [WeightEntry] {
+        let calendar = Calendar.current
+
+        // Create a set of calendar days that exist in HealthKit
+        let healthKitDays = Set(healthKit.map { calendar.startOfDay(for: $0.date) })
+
+        // Filter Fitbit entries to only those not in HealthKit
+        let missing = fitbit.filter { entry in
+            let entryDay = calendar.startOfDay(for: entry.date)
+            return !healthKitDays.contains(entryDay)
+        }
+
+        // Sort by date descending (most recent first)
+        return missing.sorted { $0.date > $1.date }
+    }
+
+    /// Finds body fat entries from Fitbit that don't exist in HealthKit (fuzzy match by calendar day)
+    static func findMissingBodyFatEntries(fitbit: [BodyFatEntry], healthKit: [BodyFatEntry]) -> [BodyFatEntry] {
+        let calendar = Calendar.current
+
+        // Create a set of calendar days that exist in HealthKit
+        let healthKitDays = Set(healthKit.map { calendar.startOfDay(for: $0.date) })
+
+        // Filter Fitbit entries to only those not in HealthKit
+        let missing = fitbit.filter { entry in
+            let entryDay = calendar.startOfDay(for: entry.date)
+            return !healthKitDays.contains(entryDay)
+        }
+
+        // Sort by date descending (most recent first)
+        return missing.sorted { $0.date > $1.date }
+    }
 }
