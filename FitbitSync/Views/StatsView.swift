@@ -2,7 +2,7 @@
 //  StatsView.swift
 //  FitbitSync
 //
-//  Displays weight and body fat statistics
+//  Displays weight and body fat statistics from Fitbit and Apple Health
 //
 
 import SwiftUI
@@ -11,9 +11,13 @@ struct StatsView: View {
     @ObservedObject var authService: FitbitAuthService
     let apiService: FitbitAPIService
 
+    @StateObject private var healthKitService = HealthKitService()
+
     @State private var isLoading = true
-    @State private var weightStats: WeightStatistics?
-    @State private var bodyFatStats: BodyFatStatistics?
+    @State private var fitbitWeightStats: WeightStatistics?
+    @State private var fitbitBodyFatStats: BodyFatStatistics?
+    @State private var healthKitWeightStats: WeightStatistics?
+    @State private var healthKitBodyFatStats: BodyFatStatistics?
     @State private var errorMessage: String?
 
     var body: some View {
@@ -47,19 +51,21 @@ struct StatsView: View {
                         .padding()
                     } else {
                         // Weight Statistics
-                        StatCardView(
+                        ComparisonCardView(
                             title: "Weight",
                             icon: "scalemass.fill",
                             color: .blue,
-                            stats: weightStats
+                            fitbitStats: fitbitWeightStats,
+                            healthKitStats: healthKitWeightStats
                         )
 
                         // Body Fat Statistics
-                        StatCardView(
+                        ComparisonCardView(
                             title: "Body Fat",
                             icon: "percent",
                             color: .orange,
-                            stats: bodyFatStats
+                            fitbitStats: fitbitBodyFatStats,
+                            healthKitStats: healthKitBodyFatStats
                         )
                     }
                 }
@@ -95,16 +101,29 @@ struct StatsView: View {
         isLoading = true
         errorMessage = nil
 
-        do {
-            let data = try await apiService.fetchAllData()
+        // Request HealthKit authorization first
+        await healthKitService.requestAuthorization()
 
-            // Calculate statistics
-            let weight = DataProcessor.calculateWeightStatistics(from: data.weight)
-            let bodyFat = DataProcessor.calculateBodyFatStatistics(from: data.bodyFat)
+        do {
+            // Fetch both Fitbit and HealthKit data in parallel
+            async let fitbitData = apiService.fetchAllData()
+            async let healthKitData = healthKitService.fetchAllData()
+
+            let (fitbit, healthKit) = try await (fitbitData, healthKitData)
+
+            // Calculate statistics for Fitbit
+            let fbWeight = DataProcessor.calculateWeightStatistics(from: fitbit.weight)
+            let fbBodyFat = DataProcessor.calculateBodyFatStatistics(from: fitbit.bodyFat)
+
+            // Calculate statistics for HealthKit
+            let hkWeight = DataProcessor.calculateWeightStatistics(from: healthKit.weight)
+            let hkBodyFat = DataProcessor.calculateBodyFatStatistics(from: healthKit.bodyFat)
 
             await MainActor.run {
-                weightStats = weight
-                bodyFatStats = bodyFat
+                fitbitWeightStats = fbWeight
+                fitbitBodyFatStats = fbBodyFat
+                healthKitWeightStats = hkWeight
+                healthKitBodyFatStats = hkBodyFat
                 isLoading = false
             }
         } catch {
@@ -128,13 +147,14 @@ struct StatsView: View {
     }
 }
 
-// MARK: - Stat Card View
+// MARK: - Comparison Card View
 
-struct StatCardView: View {
+struct ComparisonCardView: View {
     let title: String
     let icon: String
     let color: Color
-    let stats: Any?
+    let fitbitStats: Any?
+    let healthKitStats: Any?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
@@ -149,14 +169,44 @@ struct StatCardView: View {
 
             Divider()
 
-            if let weightStats = stats as? WeightStatistics {
-                WeightStatsContent(stats: weightStats)
-            } else if let bodyFatStats = stats as? BodyFatStatistics {
-                BodyFatStatsContent(stats: bodyFatStats)
-            } else {
-                Text("No data available")
-                    .foregroundColor(.secondary)
-                    .italic()
+            HStack(alignment: .top, spacing: 20) {
+                // Fitbit column
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Fitbit")
+                        .font(.headline)
+                        .foregroundColor(.blue)
+
+                    if let weightStats = fitbitStats as? WeightStatistics {
+                        WeightStatsContent(stats: weightStats)
+                    } else if let bodyFatStats = fitbitStats as? BodyFatStatistics {
+                        BodyFatStatsContent(stats: bodyFatStats)
+                    } else {
+                        Text("No data")
+                            .foregroundColor(.secondary)
+                            .italic()
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Divider()
+
+                // Apple Health column
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Apple Health")
+                        .font(.headline)
+                        .foregroundColor(.green)
+
+                    if let weightStats = healthKitStats as? WeightStatistics {
+                        WeightStatsContent(stats: weightStats)
+                    } else if let bodyFatStats = healthKitStats as? BodyFatStatistics {
+                        BodyFatStatsContent(stats: bodyFatStats)
+                    } else {
+                        Text("No data")
+                            .foregroundColor(.secondary)
+                            .italic()
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding()
@@ -199,9 +249,10 @@ struct WeightStatsContent: View {
             }
 
             if stats.first == nil && stats.last == nil && stats.average == nil {
-                Text("No weight data available")
+                Text("No data")
                     .foregroundColor(.secondary)
                     .italic()
+                    .font(.caption)
             }
         }
     }
@@ -239,9 +290,10 @@ struct BodyFatStatsContent: View {
             }
 
             if stats.first == nil && stats.last == nil && stats.average == nil {
-                Text("No body fat data available")
+                Text("No data")
                     .foregroundColor(.secondary)
                     .italic()
+                    .font(.caption)
             }
         }
     }
@@ -255,18 +307,16 @@ struct StatRow: View {
     let date: String?
 
     var body: some View {
-        HStack {
+        VStack(alignment: .leading, spacing: 2) {
             Text(label)
+                .font(.caption)
                 .foregroundColor(.secondary)
-            Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(value)
-                    .fontWeight(.semibold)
-                if let date = date {
-                    Text(date)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+            Text(value)
+                .fontWeight(.semibold)
+            if let date = date {
+                Text(date)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
         }
     }

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -19,16 +19,19 @@
 		B027DDECBB1810237A5C6436 /* DataProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AD89670BA86F9CBF948B4B /* DataProcessor.swift */; };
 		B9B639435F9FFF42B752F898 /* FitbitSyncApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EDEEFAAC2646BFDD9613DFE /* FitbitSyncApp.swift */; };
 		C713B9A366DA32FBA89C9379 /* FitbitAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2654E98DBBEA18D7C724D021 /* FitbitAuthService.swift */; };
+		D2B96A058E2A058DA45157E2 /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12DBBA12DCCAAF1AC12B0ED /* HealthKitService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		2654E98DBBEA18D7C724D021 /* FitbitAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitbitAuthService.swift; sourceTree = "<group>"; };
 		2EDEEFAAC2646BFDD9613DFE /* FitbitSyncApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitbitSyncApp.swift; sourceTree = "<group>"; };
 		36C35E2450A998CD8CA50B0C /* FitbitConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitbitConfig.swift; sourceTree = "<group>"; };
-		5D7619AFA6FB2071FF66614D /* FitbitSync.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FitbitSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5D7619AFA6FB2071FF66614D /* FitbitSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitbitSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BA0163B31185377E9276D1B /* OAuthToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthToken.swift; sourceTree = "<group>"; };
 		81C657F74E6C785F9CC71A61 /* FitbitAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitbitAPIService.swift; sourceTree = "<group>"; };
+		95A1FF7B653ACE0C5C9E1C66 /* FitbitSync.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitbitSync.entitlements; sourceTree = "<group>"; };
 		9B0F164B2F2FE83E0692C7D4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A12DBBA12DCCAAF1AC12B0ED /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
 		B1AAAF53373B8D06FF2DA6C7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B5AD89670BA86F9CBF948B4B /* DataProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataProcessor.swift; sourceTree = "<group>"; };
 		BD8CBA97AB0A3D0F91A612B6 /* WeightEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightEntry.swift; sourceTree = "<group>"; };
@@ -63,6 +66,7 @@
 				B5AD89670BA86F9CBF948B4B /* DataProcessor.swift */,
 				81C657F74E6C785F9CC71A61 /* FitbitAPIService.swift */,
 				2654E98DBBEA18D7C724D021 /* FitbitAuthService.swift */,
+				A12DBBA12DCCAAF1AC12B0ED /* HealthKitService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -82,6 +86,7 @@
 			children = (
 				C3DA07DFE7B1D55869B30C2C /* Assets.xcassets */,
 				36C35E2450A998CD8CA50B0C /* FitbitConfig.swift */,
+				95A1FF7B653ACE0C5C9E1C66 /* FitbitSync.entitlements */,
 				2EDEEFAAC2646BFDD9613DFE /* FitbitSyncApp.swift */,
 				B1AAAF53373B8D06FF2DA6C7 /* Info.plist */,
 				2476D8957A9F652453439E89 /* Models */,
@@ -139,7 +144,6 @@
 			);
 			mainGroup = 12D42DA5AB9AB7BDDC81986F;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -171,6 +175,7 @@
 				C713B9A366DA32FBA89C9379 /* FitbitAuthService.swift in Sources */,
 				1FEF25D7BF583FED60EA43A1 /* FitbitConfig.swift in Sources */,
 				B9B639435F9FFF42B752F898 /* FitbitSyncApp.swift in Sources */,
+				D2B96A058E2A058DA45157E2 /* HealthKitService.swift in Sources */,
 				4626BCB79C24B1B618C749A0 /* LoginView.swift in Sources */,
 				A04B56917EE179B8BFFCF58B /* OAuthToken.swift in Sources */,
 				86129A04723C0912A08F69BD /* StatsView.swift in Sources */,
@@ -186,7 +191,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = FitbitSync/FitbitSync.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 4M765KZNY4;
 				INFOPLIST_FILE = FitbitSync/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -203,7 +210,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = FitbitSync/FitbitSync.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 4M765KZNY4;
 				INFOPLIST_FILE = FitbitSync/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
