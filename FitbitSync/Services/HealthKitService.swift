@@ -168,6 +168,74 @@ class HealthKitService: ObservableObject {
 
         return try await (weight: weightData, bodyFat: bodyFatData)
     }
+
+    // MARK: - Check Write Authorization
+
+    func canWriteWeight() -> Bool {
+        guard let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass) else {
+            return false
+        }
+        return healthStore.authorizationStatus(for: weightType) == .sharingAuthorized
+    }
+
+    func canWriteBodyFat() -> Bool {
+        guard let bodyFatType = HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage) else {
+            return false
+        }
+        return healthStore.authorizationStatus(for: bodyFatType) == .sharingAuthorized
+    }
+
+    // MARK: - Write Weight Data
+
+    func saveWeightEntry(_ entry: WeightEntry) async throws {
+        guard let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass) else {
+            throw HealthKitError.invalidType
+        }
+
+        // Check authorization status
+        let authStatus = healthStore.authorizationStatus(for: weightType)
+        if authStatus != .sharingAuthorized {
+            throw HealthKitError.writeNotAuthorized
+        }
+
+        let quantity = HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: entry.weight)
+        let sample = HKQuantitySample(
+            type: weightType,
+            quantity: quantity,
+            start: entry.date,
+            end: entry.date
+        )
+
+        try await healthStore.save(sample)
+        print("Saved weight entry: \(entry.weight) kg on \(entry.date)")
+    }
+
+    // MARK: - Write Body Fat Data
+
+    func saveBodyFatEntry(_ entry: BodyFatEntry) async throws {
+        guard let bodyFatType = HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage) else {
+            throw HealthKitError.invalidType
+        }
+
+        // Check authorization status
+        let authStatus = healthStore.authorizationStatus(for: bodyFatType)
+        if authStatus != .sharingAuthorized {
+            throw HealthKitError.writeNotAuthorized
+        }
+
+        // HealthKit stores body fat as a fraction (0.0 to 1.0), convert from percentage
+        let fractionValue = entry.fat / 100.0
+        let quantity = HKQuantity(unit: .percent(), doubleValue: fractionValue)
+        let sample = HKQuantitySample(
+            type: bodyFatType,
+            quantity: quantity,
+            start: entry.date,
+            end: entry.date
+        )
+
+        try await healthStore.save(sample)
+        print("Saved body fat entry: \(entry.fat)% on \(entry.date)")
+    }
 }
 
 // MARK: - Errors
@@ -177,6 +245,7 @@ enum HealthKitError: LocalizedError {
     case invalidType
     case authorizationDenied
     case missingEntitlement
+    case writeNotAuthorized
 
     var errorDescription: String? {
         switch self {
@@ -188,6 +257,8 @@ enum HealthKitError: LocalizedError {
             return "HealthKit authorization was denied"
         case .missingEntitlement:
             return "HealthKit entitlement is missing. Please enable HealthKit capability in Xcode."
+        case .writeNotAuthorized:
+            return "Write access not authorized. Open Health app > Sharing > Apps > FitbitSync and enable write access for Weight and Body Fat."
         }
     }
 }

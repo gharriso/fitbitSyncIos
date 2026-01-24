@@ -77,7 +77,8 @@ struct StatsView: View {
                         NavigationLink {
                             MissingEntriesView(
                                 missingWeightEntries: missingWeightEntries,
-                                missingBodyFatEntries: missingBodyFatEntries
+                                missingBodyFatEntries: missingBodyFatEntries,
+                                healthKitService: healthKitService
                             )
                         } label: {
                             HStack {

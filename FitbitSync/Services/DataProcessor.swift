@@ -100,35 +100,33 @@ class DataProcessor {
 
     // MARK: - Comparison (Find Missing Entries)
 
-    /// Finds weight entries from Fitbit that don't exist in HealthKit (fuzzy match by calendar day)
+    /// Finds weight entries from Fitbit that are newer than the most recent HealthKit entry
+    /// Only considers entries missing if they're beyond the HealthKit data range
     static func findMissingWeightEntries(fitbit: [WeightEntry], healthKit: [WeightEntry]) -> [WeightEntry] {
-        let calendar = Calendar.current
-
-        // Create a set of calendar days that exist in HealthKit
-        let healthKitDays = Set(healthKit.map { calendar.startOfDay(for: $0.date) })
-
-        // Filter Fitbit entries to only those not in HealthKit
-        let missing = fitbit.filter { entry in
-            let entryDay = calendar.startOfDay(for: entry.date)
-            return !healthKitDays.contains(entryDay)
+        // Find the most recent HealthKit entry date
+        guard let mostRecentHealthKitDate = healthKit.map({ $0.date }).max() else {
+            // No HealthKit data - all Fitbit entries are missing
+            return fitbit.sorted { $0.date > $1.date }
         }
+
+        // Only return Fitbit entries newer than the most recent HealthKit entry
+        let missing = fitbit.filter { $0.date > mostRecentHealthKitDate }
 
         // Sort by date descending (most recent first)
         return missing.sorted { $0.date > $1.date }
     }
 
-    /// Finds body fat entries from Fitbit that don't exist in HealthKit (fuzzy match by calendar day)
+    /// Finds body fat entries from Fitbit that are newer than the most recent HealthKit entry
+    /// Only considers entries missing if they're beyond the HealthKit data range
     static func findMissingBodyFatEntries(fitbit: [BodyFatEntry], healthKit: [BodyFatEntry]) -> [BodyFatEntry] {
-        let calendar = Calendar.current
-
-        // Create a set of calendar days that exist in HealthKit
-        let healthKitDays = Set(healthKit.map { calendar.startOfDay(for: $0.date) })
-
-        // Filter Fitbit entries to only those not in HealthKit
-        let missing = fitbit.filter { entry in
-            let entryDay = calendar.startOfDay(for: entry.date)
-            return !healthKitDays.contains(entryDay)
+        // Find the most recent HealthKit entry date
+        guard let mostRecentHealthKitDate = healthKit.map({ $0.date }).max() else {
+            // No HealthKit data - all Fitbit entries are missing
+            return fitbit.sorted { $0.date > $1.date }
         }
+
+        // Only return Fitbit entries newer than the most recent HealthKit entry
+        let missing = fitbit.filter { $0.date > mostRecentHealthKitDate }
 
         // Sort by date descending (most recent first)
         return missing.sorted { $0.date > $1.date }
