@@ -1,159 +1,147 @@
-# FitbitSync iOS App
+# FitbitSync
 
-An iOS app that connects to Fitbit, fetches weight and body fat percentage data, and displays statistics including first, last, and average values.
+An iOS app that syncs health data between Fitbit and Apple Health. View comparative statistics from both sources and sync missing Fitbit entries to Apple Health.
 
 ## Features
 
-- OAuth 2.0 authentication with Fitbit
-- Fetches all historical weight and body fat data
-- Displays statistics:
-  - First recorded value with date
-  - Last recorded value with date
-  - Average value
-- Secure token storage using iOS Keychain
-- Clean SwiftUI interface
+- **Fitbit OAuth 2.0 Authentication** - Secure login with token storage in iOS Keychain
+- **Historical Data Fetching** - Retrieves up to 2 years of weight and body fat data from Fitbit
+- **Apple Health Integration** - Reads existing HealthKit data and writes synced entries
+- **Side-by-Side Comparison** - View statistics (first, last, average) from both data sources
+- **Missing Entry Detection** - Identifies Fitbit entries not present in Apple Health
+- **Batch Sync** - Sync missing entries to Apple Health with progress tracking
+- **Smart Filtering** - Removes Fitbit's interpolated and duplicate values
 
-## Prerequisites
+## Requirements
 
-- Xcode 26.2 or later
-- iOS 17.0 or later
-- Fitbit Developer account with registered app
+- iOS 17.0+
+- Xcode 15.0+
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen) (for project generation)
+- Fitbit Developer Account (for API credentials)
 
-## Setup Instructions
+## Setup
 
-### 1. Register a Fitbit App
+### 1. Install XcodeGen
 
-1. Go to https://dev.fitbit.com/apps
+```bash
+brew install xcodegen
+```
+
+### 2. Register a Fitbit App
+
+1. Go to [dev.fitbit.com/apps](https://dev.fitbit.com/apps)
 2. Click "Register a New App"
 3. Fill in the required fields:
-   - Application Name: FitbitSync
-   - Description: iOS app for syncing Fitbit data
-   - Application Website: (your website or localhost)
-   - Organization: (your name/company)
-   - Organization Website: (your website)
    - **OAuth 2.0 Application Type**: Personal
    - **Callback URL**: `fitbitsync://callback`
-   - Default Access Type: Read Only
-4. Agree to terms and click Register
-5. Note your **Client ID** and **Client Secret**
+   - **Default Access Type**: Read Only
+4. Note your **Client ID** and **Client Secret**
 
-### 2. Configure the App
+### 3. Configure Credentials
 
-1. Open `FitbitSync/FitbitConfig.swift`
-2. Replace the placeholder values:
-   ```swift
-   static let clientId = "YOUR_CLIENT_ID_HERE"  // Replace with your Client ID
-   static let clientSecret = "YOUR_CLIENT_SECRET_HERE"  // Replace with your Client Secret
-   ```
-3. Save the file
+Update `FitbitSync/FitbitConfig.swift` with your Fitbit API credentials:
 
-### 3. Build and Run
+```swift
+enum FitbitConfig {
+    static let clientId = "YOUR_CLIENT_ID"
+    static let clientSecret = "YOUR_CLIENT_SECRET"
+    static let redirectURI = "fitbitsync://callback"
+}
+```
 
-1. Open `FitbitSync.xcodeproj` in Xcode
-2. Select a simulator or physical device (iOS 17.0+)
-3. Build and run (Cmd+R)
+### 4. Generate Xcode Project
+
+```bash
+xcodegen generate
+```
+
+### 5. Build and Run
+
+```bash
+open FitbitSync.xcodeproj
+```
+
+Build and run on a physical device (HealthKit requires a real device for full functionality).
 
 ## Project Structure
 
 ```
 FitbitSync/
-├── FitbitSyncApp.swift          # App entry point
-├── FitbitConfig.swift           # Configuration (credentials)
+├── FitbitSyncApp.swift           # App entry point
+├── FitbitConfig.swift            # API configuration
 ├── Models/
-│   ├── WeightEntry.swift        # Weight data model
-│   ├── BodyFatEntry.swift       # Body fat data model
-│   └── OAuthToken.swift         # OAuth token model
+│   ├── WeightEntry.swift         # Weight data model
+│   ├── BodyFatEntry.swift        # Body fat data model
+│   └── OAuthToken.swift          # OAuth token model
 ├── Services/
-│   ├── FitbitAuthService.swift  # OAuth 2.0 authentication
-│   ├── FitbitAPIService.swift   # API client
-│   └── DataProcessor.swift      # Statistics calculator
+│   ├── FitbitAuthService.swift   # OAuth authentication
+│   ├── FitbitAPIService.swift    # Fitbit API client
+│   ├── HealthKitService.swift    # Apple Health integration
+│   └── DataProcessor.swift       # Statistics and comparison
 └── Views/
-    ├── ContentView.swift        # Main coordinator
-    ├── LoginView.swift          # Login screen
-    └── StatsView.swift          # Statistics display
+    ├── ContentView.swift         # Main coordinator
+    ├── LoginView.swift           # OAuth login screen
+    ├── StatsView.swift           # Statistics dashboard
+    └── MissingEntriesView.swift  # Sync missing entries
 ```
 
 ## Usage
 
 1. Launch the app
-2. Tap "Connect to Fitbit"
-3. Log in with your Fitbit credentials in the browser
-4. Authorize the app
-5. View your weight and body fat statistics
+2. Tap "Connect to Fitbit" and authorize the app
+3. Grant HealthKit permissions when prompted
+4. View comparative statistics from Fitbit and Apple Health
+5. Navigate to missing entries to sync Fitbit data to Apple Health
 
 ## How It Works
 
 ### Authentication Flow
 1. User taps "Connect to Fitbit"
-2. App opens Fitbit authorization page in ASWebAuthenticationSession
+2. App opens Fitbit authorization page via `ASWebAuthenticationSession`
 3. User logs in and authorizes the app
 4. Fitbit redirects to `fitbitsync://callback?code=XXXXX`
 5. App exchanges authorization code for access token
 6. Token is securely stored in iOS Keychain
 
-### Data Fetching
-1. App makes authenticated requests to Fitbit API:
-   - `GET /1/user/-/body/log/weight/date/{today}/max.json`
-   - `GET /1/user/-/body/log/fat/date/{today}/max.json`
-2. Fetches all historical data using "max" period
-3. Parses JSON responses into Swift models
-4. Calculates statistics (first, last, average)
-5. Displays results in clean UI
+### Data Sync Flow
+1. App fetches weight and body fat history from Fitbit API (up to 2 years)
+2. App reads existing data from Apple Health
+3. Smart filtering removes Fitbit's interpolated/duplicate values
+4. Statistics are calculated and displayed side-by-side
+5. Missing entries are identified and can be synced to Apple Health
 
-## API Endpoints Used
+## API Endpoints
 
 - **Authorization**: `https://www.fitbit.com/oauth2/authorize`
 - **Token Exchange**: `https://api.fitbit.com/oauth2/token`
 - **Weight Data**: `https://api.fitbit.com/1/user/-/body/log/weight/date/{date}/{period}.json`
 - **Body Fat Data**: `https://api.fitbit.com/1/user/-/body/log/fat/date/{date}/{period}.json`
 
-## Technologies
+## Privacy & Security
 
-- **Language**: Swift
-- **UI Framework**: SwiftUI
-- **Authentication**: ASWebAuthenticationSession
-- **Networking**: URLSession with async/await
-- **Storage**: Keychain Services
-- **Minimum iOS**: 17.0
-
-## Security
-
-- OAuth 2.0 flow for secure authentication
-- Access tokens stored securely in iOS Keychain
-- No credentials stored in plain text
+- OAuth tokens stored securely in iOS Keychain
+- Health data remains on-device
+- No data sent to third-party servers
 - HTTPS for all API communication
 
 ## Troubleshooting
 
 ### "Configuration Required" message
-- Make sure you've added your Fitbit Client ID and Client Secret in `FitbitConfig.swift`
+Make sure you've added your Fitbit Client ID and Client Secret in `FitbitConfig.swift`
 
 ### Authentication fails
-- Verify your callback URL in Fitbit app settings matches `fitbitsync://callback`
-- Check that your Client ID and Secret are correct
-- Ensure your Fitbit app is set to "Personal" application type
+- Verify callback URL in Fitbit app settings matches `fitbitsync://callback`
+- Check that Client ID and Secret are correct
+- Ensure Fitbit app is set to "Personal" application type
+
+### HealthKit permissions denied
+- Go to Settings > Health > Data Access & Devices > FitbitSync
+- Enable read/write access for weight and body fat percentage
 
 ### No data displayed
-- Verify you have weight or body fat data logged in your Fitbit account
+- Verify you have weight/body fat data logged in Fitbit
 - Check that you authorized the "weight" scope during login
-- Try logging out and logging back in
-
-### Build errors
-- Ensure you're using Xcode 26.2 or later
-- Clean build folder (Cmd+Shift+K) and rebuild
-
-## Future Enhancements (Not in Phase 1)
-
-- Data persistence (CoreData)
-- Charts and graphs
-- Export data functionality
-- Health app integration
-- Support for additional metrics
 
 ## License
 
-This is a personal project for syncing Fitbit data.
-
-## Credits
-
-Built using the Fitbit Web API: https://dev.fitbit.com/build/reference/web-api/
+MIT

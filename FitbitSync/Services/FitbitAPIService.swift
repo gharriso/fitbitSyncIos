@@ -63,18 +63,37 @@ class FitbitAPIService {
         }
 
         let weightResponse = try JSONDecoder().decode(WeightTimeSeriesResponse.self, from: data)
-        print("Parsed \(weightResponse.bodyWeight.count) weight entries")
+        print("Parsed \(weightResponse.bodyWeight.count) raw weight entries from API")
 
         // Convert API response to WeightEntry models
-        return weightResponse.bodyWeight.compactMap { entry in
+        // Filter out entries with zero weight (days with no actual recording)
+        let allEntries = weightResponse.bodyWeight.compactMap { entry -> WeightEntry? in
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
             guard let date = formatter.date(from: entry.dateTime),
-                  let weight = Double(entry.value) else {
+                  let weight = Double(entry.value),
+                  weight > 0 else {
                 return nil
             }
             return WeightEntry(date: date, weight: weight, source: "Fitbit")
         }
+
+        // Filter out consecutive duplicate values (Fitbit carries forward the last value for days without new data)
+        // Round to 1 decimal place to catch interpolated values
+        let sortedEntries = allEntries.sorted { $0.date < $1.date }
+        var validEntries: [WeightEntry] = []
+        var lastValue: Double?
+        for entry in sortedEntries {
+            let roundedWeight = (entry.weight * 10).rounded() / 10
+            let roundedLast = lastValue.map { ($0 * 10).rounded() / 10 }
+            if roundedWeight != roundedLast {
+                validEntries.append(entry)
+                lastValue = entry.weight
+            }
+        }
+
+        print("After filtering duplicates: \(validEntries.count) valid weight entries")
+        return validEntries
     }
 
     // MARK: - Fetch Body Fat Data
@@ -126,18 +145,37 @@ class FitbitAPIService {
         }
 
         let bodyFatResponse = try JSONDecoder().decode(BodyFatTimeSeriesResponse.self, from: data)
-        print("Parsed \(bodyFatResponse.bodyFat.count) body fat entries")
+        print("Parsed \(bodyFatResponse.bodyFat.count) raw body fat entries from API")
 
         // Convert API response to BodyFatEntry models
-        return bodyFatResponse.bodyFat.compactMap { entry in
+        // Filter out entries with zero body fat (days with no actual recording)
+        let allEntries = bodyFatResponse.bodyFat.compactMap { entry -> BodyFatEntry? in
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
             guard let date = formatter.date(from: entry.dateTime),
-                  let fat = Double(entry.value) else {
+                  let fat = Double(entry.value),
+                  fat > 0 else {
                 return nil
             }
             return BodyFatEntry(date: date, fat: fat)
         }
+
+        // Filter out consecutive duplicate values (Fitbit carries forward/interpolates the last value for days without new data)
+        // Round to 1 decimal place because Fitbit applies interpolation that creates tiny variations
+        let sortedEntries = allEntries.sorted { $0.date < $1.date }
+        var validEntries: [BodyFatEntry] = []
+        var lastValue: Double?
+        for entry in sortedEntries {
+            let roundedFat = (entry.fat * 10).rounded() / 10
+            let roundedLast = lastValue.map { ($0 * 10).rounded() / 10 }
+            if roundedFat != roundedLast {
+                validEntries.append(entry)
+                lastValue = entry.fat
+            }
+        }
+
+        print("After filtering duplicates: \(validEntries.count) valid body fat entries")
+        return validEntries
     }
 
     // MARK: - Fetch All Data
